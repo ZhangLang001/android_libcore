@@ -31,14 +31,12 @@ public class BaseDexClassLoader extends ClassLoader {
 
     /**
      * Constructs an instance.
-     * Note that all the *.jar and *.apk files from {@code dexPath} might be
-     * first extracted in-memory before the code is loaded. This can be avoided
-     * by passing raw dex files (*.dex) in the {@code dexPath}.
      *
      * @param dexPath the list of jar/apk files containing classes and
      * resources, delimited by {@code File.pathSeparator}, which
-     * defaults to {@code ":"} on Android.
-     * @param optimizedDirectory this parameter is deprecated and has no effect
+     * defaults to {@code ":"} on Android
+     * @param optimizedDirectory directory where optimized dex files
+     * should be written; may be {@code null}
      * @param librarySearchPath the list of directories containing native
      * libraries, delimited by {@code File.pathSeparator}; may be
      * {@code null}
@@ -47,7 +45,7 @@ public class BaseDexClassLoader extends ClassLoader {
     public BaseDexClassLoader(String dexPath, File optimizedDirectory,
             String librarySearchPath, ClassLoader parent) {
         super(parent);
-        this.pathList = new DexPathList(this, dexPath, librarySearchPath, null);
+        this.pathList = new DexPathList(this, dexPath, librarySearchPath, optimizedDirectory);
     }
 
     @Override
@@ -55,8 +53,7 @@ public class BaseDexClassLoader extends ClassLoader {
         List<Throwable> suppressedExceptions = new ArrayList<Throwable>();
         Class c = pathList.findClass(name, suppressedExceptions);
         if (c == null) {
-            ClassNotFoundException cnfe = new ClassNotFoundException(
-                    "Didn't find class \"" + name + "\" on path: " + pathList);
+            ClassNotFoundException cnfe = new ClassNotFoundException("Didn't find class \"" + name + "\" on path: " + pathList);
             for (Throwable t : suppressedExceptions) {
                 cnfe.addSuppressed(t);
             }
